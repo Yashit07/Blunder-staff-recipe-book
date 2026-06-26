@@ -1,16 +1,10 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { Trash2, Plus, Minus, GripVertical } from "lucide-react";
+import { Trash2, Plus, Minus, GripVertical, Printer } from "lucide-react";
 import { SizeToggle } from "./SizeToggle";
+import { PackagingSection } from "./PackagingSection";
+import { CostSummary } from "./CostSummary";
 import { SIZE_RATIOS } from "../../data/seedData";
-
-const formatQty = (n) => {
-  if (Number.isFinite(n)) {
-    // Round to one decimal, drop trailing .0
-    const rounded = Math.round(n * 10) / 10;
-    return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(1);
-  }
-  return n;
-};
+import { formatQty, formatDate } from "../../utils/format";
 
 const PulseQty = ({ value, unit }) => {
   const [animKey, setAnimKey] = useState(0);
@@ -41,6 +35,8 @@ export const MenuCard = ({
   editMode,
   onChange,
   onDelete,
+  onPrint,
+  currency = "$",
 }) => {
   const [size, setSize] = useState("Medium");
   const ratio = SIZE_RATIOS[size];
@@ -50,6 +46,7 @@ export const MenuCard = ({
       item.ingredients.map((ing) => ({
         ...ing,
         scaled: ing.amount * ratio,
+        costPerUnit: ing.costPerUnit ?? 0,
       })),
     [item.ingredients, ratio]
   );
@@ -92,24 +89,40 @@ export const MenuCard = ({
       className="neuro-card p-6 sm:p-7 flex flex-col gap-5 fade-rise relative"
       data-testid={`menu-card-${item.id}`}
     >
-      {editMode && (
+      <div className="absolute top-4 right-4 flex items-center gap-2">
         <button
-          onClick={() => onDelete(item.id)}
-          className="absolute top-4 right-4 h-9 w-9 rounded-full flex items-center justify-center transition-all"
+          onClick={() => onPrint && onPrint(item, size)}
+          className="h-9 w-9 rounded-full flex items-center justify-center transition-all"
           style={{
             background: "#F4F3EF",
             boxShadow: "3px 3px 7px #e5e4e0, -3px -3px 7px #ffffff",
-            color: "#C97B6B",
+            color: "#7A7A75",
           }}
-          aria-label="Delete item"
-          data-testid={`menu-card-delete-${item.id}`}
+          aria-label="Print recipe"
+          title="Print this recipe"
+          data-testid={`menu-card-print-${item.id}`}
         >
-          <Trash2 size={16} strokeWidth={2.3} />
+          <Printer size={15} strokeWidth={2.3} />
         </button>
-      )}
+        {editMode && (
+          <button
+            onClick={() => onDelete(item.id)}
+            className="h-9 w-9 rounded-full flex items-center justify-center transition-all"
+            style={{
+              background: "#F4F3EF",
+              boxShadow: "3px 3px 7px #e5e4e0, -3px -3px 7px #ffffff",
+              color: "#C97B6B",
+            }}
+            aria-label="Delete item"
+            data-testid={`menu-card-delete-${item.id}`}
+          >
+            <Trash2 size={16} strokeWidth={2.3} />
+          </button>
+        )}
+      </div>
 
       {/* Header */}
-      <header className="flex flex-col gap-2 pr-10">
+      <header className="flex flex-col gap-2 pr-24">
         <div className="flex items-center gap-2">
           {editMode ? (
             <input
@@ -200,43 +213,69 @@ export const MenuCard = ({
               data-testid={`ingredient-row-${item.id}-${idx}`}
             >
               {editMode ? (
-                <>
-                  <div className="flex items-center gap-2 flex-1">
-                    <GripVertical size={14} style={{ color: "#7A7A75", opacity: 0.5 }} />
+                <div className="flex flex-col gap-1.5 w-full">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <GripVertical size={14} style={{ color: "#7A7A75", opacity: 0.5 }} />
+                      <input
+                        className="edit-field text-sm"
+                        value={ing.name}
+                        onChange={(e) => updateIngredient(idx, { name: e.target.value })}
+                        data-testid={`ingredient-name-${item.id}-${idx}`}
+                      />
+                    </div>
+                    <input
+                      className="edit-field edit-field-num text-sm"
+                      type="number"
+                      step="0.1"
+                      value={ing.amount}
+                      onChange={(e) =>
+                        updateIngredient(idx, { amount: parseFloat(e.target.value) || 0 })
+                      }
+                      data-testid={`ingredient-amount-${item.id}-${idx}`}
+                    />
                     <input
                       className="edit-field text-sm"
-                      value={ing.name}
-                      onChange={(e) => updateIngredient(idx, { name: e.target.value })}
-                      data-testid={`ingredient-name-${item.id}-${idx}`}
+                      style={{ width: "3.5rem", textAlign: "center" }}
+                      value={ing.unit}
+                      onChange={(e) => updateIngredient(idx, { unit: e.target.value })}
+                      data-testid={`ingredient-unit-${item.id}-${idx}`}
+                    />
+                    <button
+                      onClick={() => removeIngredient(idx)}
+                      className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-black/5"
+                      style={{ color: "#C97B6B" }}
+                      aria-label="Remove ingredient"
+                      data-testid={`ingredient-remove-${item.id}-${idx}`}
+                    >
+                      <Minus size={14} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 pl-6">
+                    <label
+                      className="text-[0.6rem] uppercase tracking-[0.2em] font-bold"
+                      style={{ color: "#7A7A75", fontFamily: "Manrope" }}
+                    >
+                      Cost per {ing.unit || "unit"}
+                    </label>
+                    <span className="text-xs font-bold" style={{ color: "#7A7A75" }}>
+                      {currency}
+                    </span>
+                    <input
+                      className="edit-field edit-field-num text-sm"
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={ing.costPerUnit ?? 0}
+                      onChange={(e) =>
+                        updateIngredient(idx, {
+                          costPerUnit: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      data-testid={`ingredient-cost-${item.id}-${idx}`}
                     />
                   </div>
-                  <input
-                    className="edit-field edit-field-num text-sm"
-                    type="number"
-                    step="0.1"
-                    value={ing.amount}
-                    onChange={(e) =>
-                      updateIngredient(idx, { amount: parseFloat(e.target.value) || 0 })
-                    }
-                    data-testid={`ingredient-amount-${item.id}-${idx}`}
-                  />
-                  <input
-                    className="edit-field text-sm"
-                    style={{ width: "3.5rem", textAlign: "center" }}
-                    value={ing.unit}
-                    onChange={(e) => updateIngredient(idx, { unit: e.target.value })}
-                    data-testid={`ingredient-unit-${item.id}-${idx}`}
-                  />
-                  <button
-                    onClick={() => removeIngredient(idx)}
-                    className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-black/5"
-                    style={{ color: "#C97B6B" }}
-                    aria-label="Remove ingredient"
-                    data-testid={`ingredient-remove-${item.id}-${idx}`}
-                  >
-                    <Minus size={14} />
-                  </button>
-                </>
+                </div>
               ) : (
                 <>
                   <span
@@ -254,6 +293,25 @@ export const MenuCard = ({
           ))}
         </ul>
       </section>
+
+      <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
+
+      {/* Packaging */}
+      <PackagingSection
+        item={item}
+        editMode={editMode}
+        onChange={onChange}
+        currency={currency}
+      />
+
+      {/* Cost Summary */}
+      <CostSummary
+        item={item}
+        scaledIngredients={scaledIngredients}
+        size={size}
+        currency={currency}
+        editMode={editMode}
+      />
 
       <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />
 
@@ -326,6 +384,17 @@ export const MenuCard = ({
           ))}
         </ol>
       </section>
+
+      {(item.lastEditedBy || item.lastEditedAt) && (
+        <footer
+          className="text-[0.65rem] uppercase tracking-[0.2em] font-bold pt-1"
+          style={{ color: "#7A7A75", fontFamily: "Manrope" }}
+          data-testid={`audit-${item.id}`}
+        >
+          Updated{item.lastEditedBy ? ` by ${item.lastEditedBy}` : ""}
+          {item.lastEditedAt ? ` · ${formatDate(item.lastEditedAt)}` : ""}
+        </footer>
+      )}
     </article>
   );
 };

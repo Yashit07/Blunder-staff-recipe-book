@@ -18,12 +18,12 @@ export const seedItems = [
     category: "Smoothies",
     description: "Rich, creamy and protein-packed. Top with cocoa nibs.",
     ingredients: [
-      { id: "i-1-1", name: "Banana (frozen)", amount: 150, unit: "g" },
-      { id: "i-1-2", name: "Peanut butter", amount: 30, unit: "g" },
-      { id: "i-1-3", name: "Cocoa powder", amount: 8, unit: "g" },
-      { id: "i-1-4", name: "Oat milk", amount: 220, unit: "ml" },
-      { id: "i-1-5", name: "Honey", amount: 12, unit: "ml" },
-      { id: "i-1-6", name: "Ice cubes", amount: 4, unit: "pcs" },
+      { id: "i-1-1", name: "Banana (frozen)", amount: 150, unit: "g", costPerUnit: 0.003 },
+      { id: "i-1-2", name: "Peanut butter", amount: 30, unit: "g", costPerUnit: 0.012 },
+      { id: "i-1-3", name: "Cocoa powder", amount: 8, unit: "g", costPerUnit: 0.025 },
+      { id: "i-1-4", name: "Oat milk", amount: 220, unit: "ml", costPerUnit: 0.004 },
+      { id: "i-1-5", name: "Honey", amount: 12, unit: "ml", costPerUnit: 0.015 },
+      { id: "i-1-6", name: "Ice cubes", amount: 4, unit: "pcs", costPerUnit: 0 },
     ],
     steps: [
       "Add oat milk to the blender jug first.",
@@ -31,6 +31,10 @@ export const seedItems = [
       "Add ice cubes last.",
       "Blend on high for 35 seconds until silky.",
       "Pour into a chilled glass, sprinkle cocoa nibs on top.",
+    ],
+    packaging: [
+      { id: "p-1-1", name: "16oz cup + lid", cost: 0.35 },
+      { id: "p-1-2", name: "Paper straw", cost: 0.05 },
     ],
   },
   {

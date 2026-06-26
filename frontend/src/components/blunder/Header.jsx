@@ -1,7 +1,22 @@
-import React from "react";
-import { Lock, Unlock, Save } from "lucide-react";
+import React, { useRef } from "react";
+import { Lock, Save, Download, Upload } from "lucide-react";
 
-export const Header = ({ editMode, onEditClick, onSaveClick }) => {
+export const Header = ({
+  editMode,
+  onEditClick,
+  onSaveClick,
+  currency,
+  onCurrencyChange,
+  onExport,
+  onImport,
+}) => {
+  const fileRef = useRef(null);
+  const handleImportClick = () => fileRef.current?.click();
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file && onImport) onImport(file);
+    e.target.value = "";
+  };
   return (
     <header
       className="sticky top-0 z-40 glass-panel"
@@ -38,7 +53,63 @@ export const Header = ({ editMode, onEditClick, onSaveClick }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {editMode && (
+            <>
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+                style={{
+                  background: "#F4F3EF",
+                  boxShadow: "inset 2px 2px 5px #e5e4e0, inset -2px -2px 5px #ffffff",
+                }}
+                title="Currency symbol"
+              >
+                <span
+                  className="text-[0.6rem] uppercase tracking-[0.2em] font-bold"
+                  style={{ color: "#7A7A75", fontFamily: "Manrope" }}
+                >
+                  Cur
+                </span>
+                <input
+                  type="text"
+                  maxLength={3}
+                  value={currency || "$"}
+                  onChange={(e) => onCurrencyChange && onCurrencyChange(e.target.value)}
+                  className="w-8 text-center bg-transparent border-0 outline-none text-sm font-bold"
+                  style={{ fontFamily: "Manrope", color: "#2C2C2A" }}
+                  data-testid="currency-input"
+                />
+              </div>
+              <button
+                onClick={onExport}
+                className="neuro-button p-2.5 sm:px-4 sm:py-2.5 flex items-center gap-2 text-sm font-bold"
+                style={{ color: "#2C2C2A", fontFamily: "Manrope" }}
+                title="Export recipes as JSON"
+                data-testid="export-btn"
+              >
+                <Download size={15} strokeWidth={2.5} />
+                <span className="hidden md:inline">Export</span>
+              </button>
+              <button
+                onClick={handleImportClick}
+                className="neuro-button p-2.5 sm:px-4 sm:py-2.5 flex items-center gap-2 text-sm font-bold"
+                style={{ color: "#2C2C2A", fontFamily: "Manrope" }}
+                title="Import recipes from JSON"
+                data-testid="import-btn"
+              >
+                <Upload size={15} strokeWidth={2.5} />
+                <span className="hidden md:inline">Import</span>
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={handleFileChange}
+                className="hidden"
+                data-testid="import-file-input"
+              />
+            </>
+          )}
           {editMode ? (
             <button
               onClick={onSaveClick}
