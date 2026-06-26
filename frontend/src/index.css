@@ -1,115 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Work+Sans:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
+:root {
+    --blunder-bg: #F4F3EF;
+    --blunder-surface: #F4F3EF;
+    --blunder-text: #2C2C2A;
+    --blunder-text-muted: #7A7A75;
+    --blunder-matcha: #B2C9AB;
+    --blunder-peach: #E8B4A2;
+    --blunder-edit: #F3D899;
+    --blunder-shadow-dark: #e5e4e0;
+    --blunder-shadow-light: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
     margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+    padding: 0;
+    background: var(--blunder-bg);
+    color: var(--blunder-text);
+    font-family: 'Work Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
 }
 
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+body {
+    background-image:
+        radial-gradient(at 8% 12%, rgba(178, 201, 171, 0.18) 0px, transparent 50%),
+        radial-gradient(at 92% 88%, rgba(232, 180, 162, 0.16) 0px, transparent 50%);
+    background-attachment: fixed;
 }
 
-@layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
+h1, h2, h3, h4, h5 {
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: var(--blunder-text);
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
+/* Neumorphic surfaces */
+.neuro-card {
+    background: var(--blunder-bg);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow:
+        8px 8px 20px var(--blunder-shadow-dark),
+        -8px -8px 20px var(--blunder-shadow-light);
+    transition: all 300ms ease-out;
 }
 
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
+.neuro-pressed {
+    background: var(--blunder-bg);
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow:
+        inset 4px 4px 8px var(--blunder-shadow-dark),
+        inset -4px -4px 8px var(--blunder-shadow-light);
+}
 
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+.neuro-button {
+    background: var(--blunder-bg);
+    border-radius: 0.85rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow:
+        4px 4px 10px var(--blunder-shadow-dark),
+        -4px -4px 10px var(--blunder-shadow-light);
+    transition: all 220ms ease-out;
+}
+
+.neuro-button:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        6px 6px 14px var(--blunder-shadow-dark),
+        -6px -6px 14px var(--blunder-shadow-light);
+}
+
+.neuro-button:active {
+    transform: translateY(0);
+    box-shadow:
+        inset 3px 3px 6px var(--blunder-shadow-dark),
+        inset -3px -3px 6px var(--blunder-shadow-light);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Inline edit field */
+.edit-field {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px dashed rgba(232, 180, 162, 0.7);
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.6rem;
+    font: inherit;
+    color: inherit;
+    width: 100%;
+    outline: none;
+    transition: all 200ms ease;
+}
+
+.edit-field:focus {
+    border-color: var(--blunder-matcha);
+    box-shadow: 0 0 0 3px rgba(178, 201, 171, 0.35);
+    background: #fff;
+}
+
+/* Numeric quantity field smaller */
+.edit-field-num {
+    width: 5.5rem;
+    text-align: right;
+}
+
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Subtle quantity animation */
+@keyframes quantityPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); color: var(--blunder-matcha); }
+    100% { transform: scale(1); }
+}
+.qty-animate { animation: quantityPulse 380ms ease-out; display: inline-block; }
+
+/* Card entrance */
+@keyframes fadeRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.fade-rise { animation: fadeRise 520ms ease-out both; }
+
+/* Selection */
+::selection { background: var(--blunder-matcha); color: var(--blunder-text); }
+
+/* Focus rings */
+button:focus-visible, input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(178, 201, 171, 0.5);
+}
+
+/* Edit indicator floating */
+.edit-floating-pill {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--blunder-edit);
+    color: var(--blunder-text);
+    border-radius: 999px;
+    padding: 0.65rem 1.4rem;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    box-shadow: 0 10px 30px rgba(243, 216, 153, 0.55), 0 2px 6px rgba(0,0,0,0.08);
+    z-index: 90;
+    text-transform: uppercase;
+}
+
+/* Add Item dashed card */
+.dashed-card {
+    border: 2px dashed rgba(122, 122, 117, 0.35);
+    border-radius: 1.5rem;
+    background: rgba(255,255,255,0.4);
+    transition: all 260ms ease-out;
+    cursor: pointer;
+}
+.dashed-card:hover {
+    border-color: var(--blunder-matcha);
+    background: rgba(178, 201, 171, 0.12);
+    transform: translateY(-2px);
 }

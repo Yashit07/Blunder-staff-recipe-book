@@ -1,0 +1,26 @@
+{
+  "summary": "Frontend-only testing for Blunder Staff Recipe Manual. All core flows verified: seed render, category/search filters, size scaling math, password-protected edit mode, inline editing (name/amount), add/delete recipes, save & lock, and localStorage persistence after reload.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Brand wordmark 'blunder' visible (data-testid=brand-wordmark)",
+    "7 seed recipes rendered in grid",
+    "Category tabs render (All/Smoothies/Salads/Bowls/Coffee); Salads tab filters grid",
+    "Search input filters recipes (search 'matcha' shows 1 result)",
+    "Size scaling math correct: Choco Banana Peanut Bark base 150g -> Small 99g, Medium 150g, Large 225g",
+    "Edit button opens password modal (data-testid=password-modal)",
+    "Wrong password '1234' shows 'INCORRECT PASSWORD' error (data-testid=password-error) and stays locked",
+    "Correct password '0007' unlocks edit mode; modal closes and floating 'Edit Mode On' pill appears",
+    "Inline edit fields active in edit mode: name, ingredient amount, category, description, unit",
+    "Add Item card visible in edit mode; clicking adds a new recipe card (7 -> 8)",
+    "Delete button removes the card after window.confirm accept (8 -> 7)",
+    "Save & Lock exits edit mode: pill disappears, Edit button restored, fields become read-only (H2 instead of INPUT)",
+    "Edited ingredient amount updates the base value: Medium=200g (was 150g), Large=300g after edit",
+    "localStorage persistence: edited name 'Choco Banana TEST' and amount 200g both persist after full page reload"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "skipped", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Backend testing skipped per request (localStorage-only app). Toast overlays at top-right can transiently intercept the Save button click during automated tests immediately after add/delete actions; resolved by waiting for toasts to fade or dispatching via JS. Functionally Save works correctly in normal user flow."
+}
