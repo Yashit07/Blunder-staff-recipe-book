@@ -48,6 +48,17 @@ Requirements:
   - localStorage persistence verified across reload (edits + new items + deletions stick).
   - Sonner toast notifications for unlock / save / delete.
 
+## What's Been Implemented (2026-02 — Iteration 5)
+- **Shared cloud storage via Supabase**: A single-row JSONB table `public.blunder_state` holds the entire dataset (items + currency + rounding + userCategories). RLS open for public anon read/write — the `0007` client-side password is the only gate.
+- **Flow**:
+  - On app load → fetch from Supabase; if remote empty, seed the cloud from local; otherwise replace local with remote.
+  - On "Edit" → re-fetch latest before opening, so editors always see the freshest shared state.
+  - On "Save & Lock" → push to Supabase. Last-save-wins (per user choice).
+  - localStorage kept as offline cache so the page still works if Supabase is unreachable.
+- **Sync status pill** in footer: `SYNCED · shared on all devices` / `SYNCING` / `SYNC FAILED · using local copy` / `LOCAL ONLY`.
+- **Verified end-to-end**: Frontend showed `SYNCED · SHARED ON ALL DEVICES`; direct PATCH from one client and SELECT from another returned the same data.
+- Keys live in `frontend/.env` as `REACT_APP_SUPABASE_URL` + `REACT_APP_SUPABASE_ANON_KEY` — they bake into the build at `yarn build` time, so the GitHub Pages bundle ships with them already configured (the anon key is safe to ship; RLS controls access).
+
 ## What's Been Implemented (2026-02 — Iteration 4)
 - **Custom category tabs**: In Edit Mode, an "+ Add tab" button appears at the end of the category row. Click → prompt for name (e.g. "Cakes") → tab is added & becomes active. User-added tabs show a small X for one-click removal (blocked if any recipe still uses that category). Persists via localStorage `blunder.userCategories`.
 - **"Add new recipe" is now truly empty**: No more pre-filled "Ingredient 1", "First step." etc. Name, description, ingredients & steps all start blank — fully fresh canvas for the user. Category defaults to the currently active tab.
