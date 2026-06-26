@@ -7,7 +7,8 @@ import { AddItemCard } from "../components/blunder/AddItemCard";
 import { PrintableRecipe } from "../components/blunder/PrintableRecipe";
 import { seedItems, CATEGORIES } from "../data/seedData";
 import { Toaster, toast } from "sonner";
-import { Search } from "lucide-react";
+import { Search, Cloud, CloudOff, RefreshCw } from "lucide-react";
+import { supabaseReady, fetchSharedState, saveSharedState } from "../lib/supabaseClient";
 
 const STORAGE_KEY = "blunder.menu.v1";
 const CURRENCY_KEY = "blunder.currency";
@@ -52,7 +53,53 @@ export default function RecipeManual() {
     }
   });
   const [printJob, setPrintJob] = useState(null); // { item, size }
+  const [syncStatus, setSyncStatus] = useState(
+    supabaseReady ? "idle" : "offline"
+  ); // 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
   const editedIdsRef = useRef(new Set());
+
+  // On mount: pull shared state from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    async function bootstrap() {
+      if (!supabaseReady) return;
+      setSyncStatus("syncing");
+      try {
+        const res = await fetchSharedState();
+        if (cancelled) return;
+        if (res && res.state && Array.isArray(res.state.items) && res.state.items.length > 0) {
+          setItems(res.state.items);
+          if (res.state.currency) setCurrency(res.state.currency);
+          if (res.state.rounding) setRounding(res.state.rounding);
+          if (Array.isArray(res.state.userCategories))
+            setUserCategories(res.state.userCategories);
+          setSyncStatus("synced");
+          toast.success("Loaded shared recipes from cloud");
+        } else {
+          // Remote empty — push current local state up so this device seeds the cloud
+          await saveSharedState({
+            items,
+            currency,
+            rounding,
+            userCategories,
+          });
+          if (!cancelled) setSyncStatus("synced");
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSyncStatus("error");
+          toast.error("Cloud sync unavailable", {
+            description: "Working locally. Will retry on next save.",
+          });
+        }
+      }
+    }
+    bootstrap();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -117,7 +164,26 @@ export default function RecipeManual() {
     });
   }, [items, activeCategory, search]);
 
-  const handleEditClick = () => setPwdOpen(true);
+  const handleEditClick = async () => {
+    // Refresh from cloud before opening edit so editor sees latest shared state
+    if (supabaseReady) {
+      setSyncStatus("syncing");
+      try {
+        const res = await fetchSharedState();
+        if (res && res.state && Array.isArray(res.state.items) && res.state.items.length > 0) {
+          setItems(res.state.items);
+          if (res.state.currency) setCurrency(res.state.currency);
+          if (res.state.rounding) setRounding(res.state.rounding);
+          if (Array.isArray(res.state.userCategories))
+            setUserCategories(res.state.userCategories);
+        }
+        setSyncStatus("synced");
+      } catch {
+        setSyncStatus("error");
+      }
+    }
+    setPwdOpen(true);
+  };
 
   const handleUnlock = () => {
     setPwdOpen(false);
@@ -143,22 +209,46 @@ export default function RecipeManual() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Stamp audit info on edited recipes
+    let nextItems = items;
     if (editedIdsRef.current.size > 0) {
       const nowIso = new Date().toISOString();
-      setItems((prev) =>
-        prev.map((it) =>
-          editedIdsRef.current.has(it.id)
-            ? { ...it, lastEditedBy: editor || it.lastEditedBy || "—", lastEditedAt: nowIso }
-            : it
-        )
+      nextItems = items.map((it) =>
+        editedIdsRef.current.has(it.id)
+          ? { ...it, lastEditedBy: editor || it.lastEditedBy || "—", lastEditedAt: nowIso }
+          : it
       );
+      setItems(nextItems);
     }
     editedIdsRef.current = new Set();
     setEditMode(false);
-    toast.success("Changes saved", {
-      description: "Edit mode locked. Staff view restored.",
+
+    // Push to Supabase
+    if (supabaseReady) {
+      setSyncStatus("syncing");
+      try {
+        await saveSharedState({
+          items: nextItems,
+          currency,
+          rounding,
+          userCategories,
+        });
+        setSyncStatus("synced");
+        toast.success("Changes saved & synced to cloud", {
+          description: "All devices will see the updates.",
+        });
+        return;
+      } catch (err) {
+        setSyncStatus("error");
+        toast.error("Saved locally — cloud sync failed", {
+          description: "Edits saved on this device. Will retry on next save.",
+        });
+        return;
+      }
+    }
+    toast.success("Changes saved locally", {
+      description: "Cloud sync is offline. Edits saved on this device.",
     });
   };
 
@@ -459,7 +549,57 @@ export default function RecipeManual() {
           </div>
         )}
 
-        <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+        <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center flex flex-col items-center gap-2">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[0.65rem] uppercase tracking-[0.22em] font-bold"
+            style={{
+              background:
+                syncStatus === "synced"
+                  ? "rgba(178, 201, 171, 0.25)"
+                  : syncStatus === "error" || syncStatus === "offline"
+                  ? "rgba(201, 123, 107, 0.18)"
+                  : "rgba(243, 216, 153, 0.35)",
+              color:
+                syncStatus === "synced"
+                  ? "#5A6E55"
+                  : syncStatus === "error" || syncStatus === "offline"
+                  ? "#A75A4A"
+                  : "#8A6E2A",
+              fontFamily: "Manrope",
+            }}
+            data-testid="sync-status"
+          >
+            {syncStatus === "syncing" && (
+              <>
+                <RefreshCw size={11} strokeWidth={2.5} className="animate-spin" />
+                Syncing
+              </>
+            )}
+            {syncStatus === "synced" && (
+              <>
+                <Cloud size={11} strokeWidth={2.5} />
+                Synced · shared on all devices
+              </>
+            )}
+            {syncStatus === "idle" && (
+              <>
+                <Cloud size={11} strokeWidth={2.5} />
+                Cloud ready
+              </>
+            )}
+            {syncStatus === "error" && (
+              <>
+                <CloudOff size={11} strokeWidth={2.5} />
+                Sync failed · using local copy
+              </>
+            )}
+            {syncStatus === "offline" && (
+              <>
+                <CloudOff size={11} strokeWidth={2.5} />
+                Local only (no cloud configured)
+              </>
+            )}
+          </div>
           <p className="text-xs" style={{ color: "#7A7A75" }}>
             blunder · staff recipe manual · keep flavours consistent.
           </p>
