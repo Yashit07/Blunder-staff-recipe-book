@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Blunder-staff-recipe-book/static/css/main.73db12e6.css",
+    "main.js": "/Blunder-staff-recipe-book/static/js/main.e9d7a70c.js",
+    "index.html": "/Blunder-staff-recipe-book/index.html",
+    "main.73db12e6.css.map": "/Blunder-staff-recipe-book/static/css/main.73db12e6.css.map",
+    "main.e9d7a70c.js.map": "/Blunder-staff-recipe-book/static/js/main.e9d7a70c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.73db12e6.css",
+    "static/js/main.e9d7a70c.js"
+  ]
+}
