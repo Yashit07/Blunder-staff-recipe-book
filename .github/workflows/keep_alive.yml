@@ -1,0 +1,77 @@
+name: Supabase Keep-Alive
+
+# Pings the Supabase project every 3 days so it never enters the free-tier
+# "inactive / paused" state (Supabase free projects pause after ~7 days of
+# zero database activity).
+#
+# Setup (one-time):
+#   GitHub → your repo → Settings → Secrets and variables → Actions → New secret
+#     1) SUPABASE_URL        = https://<your-project-ref>.supabase.co
+#     2) SUPABASE_ANON_KEY   = <your anon public key>
+#
+# You can also click "Run workflow" on the Actions tab to test it manually.
+
+on:
+  schedule:
+    # At 06:17 UTC every 3 days. Slightly off the top of the hour to dodge
+    # GitHub's busy minutes (cron jobs on :00 are deprioritised).
+    - cron: "17 6 */3 * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: supabase-keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping blunder_state table
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::Missing SUPABASE_URL or SUPABASE_ANON_KEY secret."
+            exit 1
+          fi
+
+          echo "Pinging $SUPABASE_URL ..."
+          HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/blunder_state?select=id,updated_at&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "HTTP $HTTP_CODE"
+          echo "Response:"
+          cat /tmp/resp.json
+          echo
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Unexpected status $HTTP_CODE — Supabase ping failed."
+            exit 1
+          fi
+
+          # Touch updated_at so the row also registers a write (read-only
+          # SELECTs are usually enough, but a tiny UPDATE makes it bulletproof).
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          UPDATE_CODE=$(curl -sS -o /tmp/upd.json -w "%{http_code}" \
+            -X PATCH \
+            "$SUPABASE_URL/rest/v1/blunder_state?id=eq.singleton" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            --data "{\"updated_at\":\"$NOW\"}")
+
+          echo "Touch updated_at HTTP $UPDATE_CODE"
+          if [ "$UPDATE_CODE" != "204" ] && [ "$UPDATE_CODE" != "200" ]; then
+            echo "::warning::Read succeeded but the touch-write returned $UPDATE_CODE."
+            cat /tmp/upd.json || true
+            # Don't fail the job — the SELECT alone is enough to count as activity.
+          fi
+
+          echo "✓ Supabase keep-alive ping completed."
