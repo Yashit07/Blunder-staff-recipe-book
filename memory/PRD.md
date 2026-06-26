@@ -48,6 +48,15 @@ Requirements:
   - localStorage persistence verified across reload (edits + new items + deletions stick).
   - Sonner toast notifications for unlock / save / delete.
 
+## What's Been Implemented (2026-02 — Iteration 2)
+- **JSON Export / Import** (`blunder-recipes-YYYY-MM-DD.json`): one-click backup or branch-sync; import with confirmation replaces current set.
+- **Print-friendly per-recipe view**: Printer icon on every card, opens browser print dialog with clean A4 layout (no chrome, dotted-line ingredient table, numbered steps, cost section, audit footer).
+- **Per-recipe edit audit (who / when)**: On first unlock, prompts for editor initials (stored in localStorage `blunder.editor`). On Save, every recipe modified during the session is stamped with `lastEditedBy` + `lastEditedAt`. Subtle audit footer visible on each card.
+- **Cost Estimator**: In Edit Mode, each ingredient gains a `Cost per unit` input. Live "Cost Estimate · {size}" panel shows Ingredients + Packaging + Total, all scaled with the selected size.
+- **Packaging section** per recipe (cups, lids, sleeves, etc.): name + flat cost, addable/removable in Edit Mode, summed into the cost estimate.
+- **Configurable currency symbol** (default `$`, editable in Edit Mode header, persisted in localStorage `blunder.currency`).
+- Seed data updated: itm-1 has full sample cost & packaging data to demo the cost estimator out-of-the-box.
+
 ## Prioritized Backlog
 ### P0 (none — MVP complete)
 
