@@ -48,6 +48,11 @@ Requirements:
   - localStorage persistence verified across reload (edits + new items + deletions stick).
   - Sonner toast notifications for unlock / save / delete.
 
+## What's Been Implemented (2026-02 — Iteration 4)
+- **Custom category tabs**: In Edit Mode, an "+ Add tab" button appears at the end of the category row. Click → prompt for name (e.g. "Cakes") → tab is added & becomes active. User-added tabs show a small X for one-click removal (blocked if any recipe still uses that category). Persists via localStorage `blunder.userCategories`.
+- **"Add new recipe" is now truly empty**: No more pre-filled "Ingredient 1", "First step." etc. Name, description, ingredients & steps all start blank — fully fresh canvas for the user. Category defaults to the currently active tab.
+- **Brand cleanup**: Removed every trace of the building platform from `public/index.html` — no "Made with Emergent" badge, no posthog tracking, no external scripts, no platform meta description. Page title is now "Blunder · Staff Recipe Manual". CSS adds a belt-and-suspenders rule that hides any externally injected badge.
+
 ## What's Been Implemented (2026-02 — Iteration 3)
 - **Default currency = ₹ (INR)** (still editable via header dropdown).
 - **GitHub Pages deployment ready**:
