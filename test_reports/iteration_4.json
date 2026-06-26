@@ -1,0 +1,18 @@
+{
+  "summary": "Validated rewritten /app/.github/workflows/keep_alive.yml. YAML parses cleanly, schema matches spec (ping job, env block with exact secret names SUPABASE_URL/SUPABASE_ANON_KEY, --globoff flag, simple GET to /rest/v1/blunder_state?select=id, no PATCH/UPDATE). Extracted the embedded bash 'run' block and executed it locally with the live Supabase credentials provided — got HTTP 200 with body [{\"id\":\"singleton\"}] and exit code 0 printing 'Supabase keep-alive ping succeeded.'. Failure path with empty env vars exits 1 and emits '::error::Missing SUPABASE_URL or SUPABASE_ANON_KEY secret.' as expected.",
+  "tested_scope": ["backend", "integration"],
+  "passed": [
+    "YAML file parses with python yaml.safe_load (no syntax errors)",
+    "Job 'ping' exists with env block mapping SUPABASE_URL and SUPABASE_ANON_KEY to ${{ secrets.SUPABASE_URL }} and ${{ secrets.SUPABASE_ANON_KEY }} (exact secret names)",
+    "curl command uses --globoff flag (the root-cause fix for 'curl: (3) bad range in URL')",
+    "curl URL ends with '/rest/v1/blunder_state?select=id' (id only, no extra columns, no PATCH/UPDATE)",
+    "Live execution against https://kgjvndwlvfmdjeuagffh.supabase.co returned HTTP 200 with valid JSON body [{\"id\":\"singleton\"}]",
+    "Bash 'run' block exits 0 and prints 'Supabase keep-alive ping succeeded.' under real credentials",
+    "Failure path: empty env vars cause exit 1 with '::error::Missing SUPABASE_URL or SUPABASE_ANON_KEY secret.'"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "N/A (skipped per request)"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
