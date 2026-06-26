@@ -13,6 +13,7 @@ const STORAGE_KEY = "blunder.menu.v1";
 const CURRENCY_KEY = "blunder.currency";
 const EDITOR_KEY = "blunder.editor";
 const ROUNDING_KEY = "blunder.rounding";
+const USER_CATS_KEY = "blunder.userCategories";
 
 const loadItems = () => {
   try {
@@ -41,6 +42,15 @@ export default function RecipeManual() {
   const [rounding, setRounding] = useState(
     () => localStorage.getItem(ROUNDING_KEY) || "none"
   );
+  const [userCategories, setUserCategories] = useState(() => {
+    try {
+      const raw = localStorage.getItem(USER_CATS_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [printJob, setPrintJob] = useState(null); // { item, size }
   const editedIdsRef = useRef(new Set());
 
@@ -56,12 +66,44 @@ export default function RecipeManual() {
     localStorage.setItem(ROUNDING_KEY, rounding || "none");
   }, [rounding]);
 
+  useEffect(() => {
+    localStorage.setItem(USER_CATS_KEY, JSON.stringify(userCategories));
+  }, [userCategories]);
+
   const categoriesPresent = useMemo(() => {
-    const set = new Set(items.map((i) => i.category).filter(Boolean));
-    const ordered = CATEGORIES.filter((c) => set.has(c));
-    const extras = [...set].filter((c) => !CATEGORIES.includes(c));
-    return [...ordered, ...extras];
-  }, [items]);
+    const inUse = new Set(items.map((i) => i.category).filter(Boolean));
+    const seenOrdered = CATEGORIES.filter((c) => inUse.has(c) || userCategories.includes(c));
+    const userExtras = userCategories.filter((c) => !seenOrdered.includes(c));
+    const itemExtras = [...inUse].filter(
+      (c) => !seenOrdered.includes(c) && !userExtras.includes(c)
+    );
+    return [...seenOrdered, ...userExtras, ...itemExtras];
+  }, [items, userCategories]);
+
+  const handleAddCategory = () => {
+    const name = (window.prompt("New tab name (e.g. Cakes, Mocktails):") || "").trim();
+    if (!name) return;
+    if (categoriesPresent.includes(name)) {
+      toast.error("That tab already exists");
+      return;
+    }
+    setUserCategories((prev) => [...prev, name]);
+    setActiveCategory(name);
+    toast.success(`Tab "${name}" added`);
+  };
+
+  const handleRemoveCategory = (name) => {
+    const used = items.some((it) => it.category === name);
+    if (used) {
+      toast.error(`Cannot remove "${name}"`, {
+        description: "Some recipes still use this tab. Move or delete them first.",
+      });
+      return;
+    }
+    if (!window.confirm(`Remove tab "${name}"?`)) return;
+    setUserCategories((prev) => prev.filter((c) => c !== name));
+    if (activeCategory === name) setActiveCategory("All");
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -136,14 +178,11 @@ export default function RecipeManual() {
     const id = `itm-${Date.now()}`;
     const newItem = {
       id,
-      name: "New Recipe",
-      category: activeCategory !== "All" ? activeCategory : "Smoothies",
-      description: "Add a short description.",
-      ingredients: [
-        { id: `i-${Date.now()}-1`, name: "Ingredient 1", amount: 100, unit: "g", costPerUnit: 0 },
-        { id: `i-${Date.now()}-2`, name: "Ingredient 2", amount: 50, unit: "ml", costPerUnit: 0 },
-      ],
-      steps: ["First step.", "Second step."],
+      name: "",
+      category: activeCategory !== "All" ? activeCategory : "",
+      description: "",
+      ingredients: [],
+      steps: [],
       packaging: [],
     };
     editedIdsRef.current.add(id);
@@ -354,6 +393,10 @@ export default function RecipeManual() {
                 categories={categoriesPresent}
                 active={activeCategory}
                 onChange={setActiveCategory}
+                editMode={editMode}
+                onAdd={handleAddCategory}
+                onRemove={handleRemoveCategory}
+                removableSet={userCategories}
               />
               <div
                 className="flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full sm:w-72"

@@ -175,6 +175,15 @@ button:focus-visible, input:focus-visible {
     transition: all 260ms ease-out;
     cursor: pointer;
 }
+/* Hide any externally injected badges (belt + suspenders) */
+#emergent-badge,
+a[href*="emergent.sh"],
+[id*="emergent-badge"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 .dashed-card:hover {
     border-color: var(--blunder-matcha);
     background: rgba(178, 201, 171, 0.12);

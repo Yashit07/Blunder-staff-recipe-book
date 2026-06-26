@@ -1,0 +1,27 @@
+{
+  "summary": "Iteration 4 frontend smoke test PASSED. Verified brand cleanup (title, no #emergent-badge, no posthog), custom user-defined category tabs (Add tab + Cakes added with X remove, pre-seeded tabs not removable), and truly-empty new recipe card (name='', desc='', 0 ingredient rows, 0 step rows). The category input on the new card defaults to the active 'Cakes' tab as designed.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Page title is 'Blunder · Staff Recipe Manual'",
+    "#emergent-badge count is 0 in DOM",
+    "No posthog script/reference in DOM",
+    "Brand 'blunder' wordmark visible; seed recipes load",
+    "Edit Mode unlocks with password 0007 (initials prompt 'JT' handled)",
+    "data-testid='category-add-btn' visible in Edit Mode",
+    "Clicking 'Add tab' + prompt 'Cakes' adds new tab data-testid='category-tab-cakes'",
+    "data-testid='category-remove-cakes' present (X visible on user-added tab)",
+    "Pre-seeded tabs (smoothies/salads/bowls/coffee/all) have NO X remove button (count=0 each)",
+    "Active tab switches to Cakes after add",
+    "'Add new recipe' (data-testid='add-item-card') creates a TRULY EMPTY card: menu-card-name value='', menu-card-desc value='', 0 ingredient-row, 0 step-row, sale-price input value=''",
+    "menu-card-category input is pre-set to 'Cakes' (current active tab) as expected"
+  ],
+  "failed": [],
+  "notes": [
+    "The string 'emergent.sh' does appear inside the JS bundle as part of the index.css 'belt and suspenders' selector a[href*=\"emergent.sh\"] that hides any such element. This is intentional per files_of_reference and is NOT a script load or external network reference.",
+    "Deferred (latency-sensitive scope): Save & Lock persistence, reload persistence of Cakes tab, remove-tab-blocked toast when category has recipes, regression for size scaling/cost/sale price/JSON/CSV/print. Prior iter 3 already covered these."
+  ],
+  "action_items": [],
+  "success_rate": {"backend": "skipped", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
