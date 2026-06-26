@@ -36,7 +36,8 @@ export const MenuCard = ({
   onChange,
   onDelete,
   onPrint,
-  currency = "$",
+  currency = "₹",
+  rounding = "none",
 }) => {
   const [size, setSize] = useState("Medium");
   const ratio = SIZE_RATIOS[size];
@@ -274,6 +275,15 @@ export const MenuCard = ({
                       }
                       data-testid={`ingredient-cost-${item.id}-${idx}`}
                     />
+                    <span
+                      className="text-[0.7rem] font-bold ml-auto tabular-nums"
+                      style={{ color: "#5A6E55", fontFamily: "Manrope" }}
+                      data-testid={`ingredient-line-cost-${item.id}-${idx}`}
+                      title="Line cost at current size"
+                    >
+                      = {currency}
+                      {((Number(ing.scaled) || 0) * (Number(ing.costPerUnit) || 0)).toFixed(2)}
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -311,6 +321,8 @@ export const MenuCard = ({
         size={size}
         currency={currency}
         editMode={editMode}
+        rounding={rounding}
+        onChange={onChange}
       />
 
       <div className="h-px w-full" style={{ background: "rgba(0,0,0,0.06)" }} />

@@ -4,7 +4,7 @@ import { formatQty, formatMoney, formatDate } from "../../utils/format";
 
 // Renders a clean printable version of a single recipe at a given size.
 // Visible only via @media print (controlled by parent via .print-target wrapper).
-export const PrintableRecipe = ({ item, size = "Medium", currency = "$" }) => {
+export const PrintableRecipe = ({ item, size = "Medium", currency = "₹", rounding = "none" }) => {
   if (!item) return null;
   const ratio = SIZE_RATIOS[size] ?? 1;
   const scaled = item.ingredients.map((i) => ({
@@ -19,6 +19,7 @@ export const PrintableRecipe = ({ item, size = "Medium", currency = "$" }) => {
   );
   const total = ingCost + pkgCost;
   const hasCost = ingCost > 0 || pkgCost > 0;
+  const salePrice = Number(item.salePrice) || 0;
 
   return (
     <div className="print-recipe">
@@ -67,7 +68,7 @@ export const PrintableRecipe = ({ item, size = "Medium", currency = "$" }) => {
               {item.packaging.map((p) => (
                 <tr key={p.id}>
                   <td>{p.name}</td>
-                  <td className="print-num">{formatMoney(p.cost, currency)}</td>
+                  <td className="print-num">{formatMoney(p.cost, currency, rounding)}</td>
                 </tr>
               ))}
             </tbody>
@@ -82,18 +83,33 @@ export const PrintableRecipe = ({ item, size = "Medium", currency = "$" }) => {
             <tbody>
               <tr>
                 <td>Ingredients</td>
-                <td className="print-num">{formatMoney(ingCost, currency)}</td>
+                <td className="print-num">{formatMoney(ingCost, currency, rounding)}</td>
               </tr>
               {pkgCost > 0 && (
                 <tr>
                   <td>Packaging</td>
-                  <td className="print-num">{formatMoney(pkgCost, currency)}</td>
+                  <td className="print-num">{formatMoney(pkgCost, currency, rounding)}</td>
                 </tr>
               )}
               <tr className="print-total">
-                <td>Total</td>
-                <td className="print-num">{formatMoney(total, currency)}</td>
+                <td>Cost Total</td>
+                <td className="print-num">{formatMoney(total, currency, rounding)}</td>
               </tr>
+              {salePrice > 0 && (
+                <>
+                  <tr>
+                    <td>Sale Price</td>
+                    <td className="print-num">{formatMoney(salePrice, currency, rounding)}</td>
+                  </tr>
+                  <tr>
+                    <td>Profit · Margin</td>
+                    <td className="print-num">
+                      {formatMoney(salePrice - total, currency, rounding)} ·{" "}
+                      {(((salePrice - total) / salePrice) * 100).toFixed(1)}%
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </section>

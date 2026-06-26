@@ -48,6 +48,17 @@ Requirements:
   - localStorage persistence verified across reload (edits + new items + deletions stick).
   - Sonner toast notifications for unlock / save / delete.
 
+## What's Been Implemented (2026-02 — Iteration 3)
+- **Default currency = ₹ (INR)** (still editable via header dropdown).
+- **GitHub Pages deployment ready**:
+  - `frontend/package.json` → `"homepage": "."` so build emits relative asset paths (works at any subpath).
+  - `App.js` uses `HashRouter` so deep links survive on static hosts.
+  - `/app/DEPLOY_GITHUB_PAGES.md` ships with two deploy paths (gh-pages branch + GitHub Actions).
+- **Sale Price field** per recipe inside the Cost Estimate panel: editable in Edit Mode, displays Profit + Margin% (red if negative). Shown in print view too.
+- **Line-cost preview** (`= ₹X.XX`) next to each ingredient's cost-per-unit input in Edit Mode — instant per-ingredient cost at current size.
+- **Cost rounding control** in header (Exact / 0.1 / 0.5 / 1 / 5 / 10), applied to all monetary displays + print.
+- **CSV export** alongside JSON: long-format CSV (one row per ingredient + per packaging item) with sale price & audit columns.
+
 ## What's Been Implemented (2026-02 — Iteration 2)
 - **JSON Export / Import** (`blunder-recipes-YYYY-MM-DD.json`): one-click backup or branch-sync; import with confirmation replaces current set.
 - **Print-friendly per-recipe view**: Printer icon on every card, opens browser print dialog with clean A4 layout (no chrome, dotted-line ingredient table, numbered steps, cost section, audit footer).

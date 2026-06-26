@@ -7,7 +7,10 @@ export const Header = ({
   onSaveClick,
   currency,
   onCurrencyChange,
+  rounding,
+  onRoundingChange,
   onExport,
+  onExportCSV,
   onImport,
 }) => {
   const fileRef = useRef(null);
@@ -73,22 +76,61 @@ export const Header = ({
                 <input
                   type="text"
                   maxLength={3}
-                  value={currency || "$"}
+                  value={currency || "₹"}
                   onChange={(e) => onCurrencyChange && onCurrencyChange(e.target.value)}
                   className="w-8 text-center bg-transparent border-0 outline-none text-sm font-bold"
                   style={{ fontFamily: "Manrope", color: "#2C2C2A" }}
                   data-testid="currency-input"
                 />
               </div>
+              <div
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+                style={{
+                  background: "#F4F3EF",
+                  boxShadow: "inset 2px 2px 5px #e5e4e0, inset -2px -2px 5px #ffffff",
+                }}
+                title="Round displayed monetary values"
+              >
+                <span
+                  className="text-[0.6rem] uppercase tracking-[0.2em] font-bold"
+                  style={{ color: "#7A7A75", fontFamily: "Manrope" }}
+                >
+                  Round
+                </span>
+                <select
+                  value={rounding || "none"}
+                  onChange={(e) => onRoundingChange && onRoundingChange(e.target.value)}
+                  className="bg-transparent border-0 outline-none text-sm font-bold cursor-pointer"
+                  style={{ fontFamily: "Manrope", color: "#2C2C2A" }}
+                  data-testid="rounding-select"
+                >
+                  <option value="none">Exact</option>
+                  <option value="0.1">0.1</option>
+                  <option value="0.5">0.5</option>
+                  <option value="1">1</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
               <button
                 onClick={onExport}
-                className="neuro-button p-2.5 sm:px-4 sm:py-2.5 flex items-center gap-2 text-sm font-bold"
+                className="neuro-button p-2.5 sm:px-3 sm:py-2.5 flex items-center gap-2 text-sm font-bold"
                 style={{ color: "#2C2C2A", fontFamily: "Manrope" }}
                 title="Export recipes as JSON"
                 data-testid="export-btn"
               >
                 <Download size={15} strokeWidth={2.5} />
-                <span className="hidden md:inline">Export</span>
+                <span className="hidden md:inline">JSON</span>
+              </button>
+              <button
+                onClick={onExportCSV}
+                className="neuro-button p-2.5 sm:px-3 sm:py-2.5 flex items-center gap-2 text-sm font-bold"
+                style={{ color: "#2C2C2A", fontFamily: "Manrope" }}
+                title="Export recipes as CSV"
+                data-testid="export-csv-btn"
+              >
+                <Download size={15} strokeWidth={2.5} />
+                <span className="hidden md:inline">CSV</span>
               </button>
               <button
                 onClick={handleImportClick}

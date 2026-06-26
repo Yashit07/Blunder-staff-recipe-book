@@ -12,6 +12,7 @@ import { Search } from "lucide-react";
 const STORAGE_KEY = "blunder.menu.v1";
 const CURRENCY_KEY = "blunder.currency";
 const EDITOR_KEY = "blunder.editor";
+const ROUNDING_KEY = "blunder.rounding";
 
 const loadItems = () => {
   try {
@@ -32,10 +33,13 @@ export default function RecipeManual() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [currency, setCurrency] = useState(
-    () => localStorage.getItem(CURRENCY_KEY) || "$"
+    () => localStorage.getItem(CURRENCY_KEY) || "₹"
   );
   const [editor, setEditor] = useState(
     () => localStorage.getItem(EDITOR_KEY) || ""
+  );
+  const [rounding, setRounding] = useState(
+    () => localStorage.getItem(ROUNDING_KEY) || "none"
   );
   const [printJob, setPrintJob] = useState(null); // { item, size }
   const editedIdsRef = useRef(new Set());
@@ -45,8 +49,12 @@ export default function RecipeManual() {
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem(CURRENCY_KEY, currency || "$");
+    localStorage.setItem(CURRENCY_KEY, currency || "₹");
   }, [currency]);
+
+  useEffect(() => {
+    localStorage.setItem(ROUNDING_KEY, rounding || "none");
+  }, [rounding]);
 
   const categoriesPresent = useMemo(() => {
     const set = new Set(items.map((i) => i.category).filter(Boolean));
@@ -161,8 +169,83 @@ export default function RecipeManual() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("Recipes exported", {
+    toast.success("Recipes exported (JSON)", {
       description: `${items.length} recipes saved to JSON.`,
+    });
+  };
+
+  const handleExportCSV = () => {
+    // Long format: one row per ingredient, plus packaging rows per recipe
+    const rows = [
+      [
+        "Recipe",
+        "Category",
+        "Section",
+        "Item",
+        "Amount (Medium)",
+        "Unit",
+        "Cost per unit",
+        "Line cost (Medium)",
+        "Sale price",
+        "Last edited by",
+        "Last edited at",
+      ],
+    ];
+    items.forEach((it) => {
+      it.ingredients.forEach((ing) => {
+        const line =
+          (Number(ing.amount) || 0) * (Number(ing.costPerUnit) || 0);
+        rows.push([
+          it.name,
+          it.category || "",
+          "Ingredient",
+          ing.name,
+          ing.amount,
+          ing.unit,
+          ing.costPerUnit ?? 0,
+          line.toFixed(4),
+          it.salePrice ?? "",
+          it.lastEditedBy || "",
+          it.lastEditedAt || "",
+        ]);
+      });
+      (it.packaging || []).forEach((p) => {
+        rows.push([
+          it.name,
+          it.category || "",
+          "Packaging",
+          p.name,
+          "",
+          "",
+          "",
+          (Number(p.cost) || 0).toFixed(4),
+          it.salePrice ?? "",
+          it.lastEditedBy || "",
+          it.lastEditedAt || "",
+        ]);
+      });
+    });
+    const csv = rows
+      .map((r) =>
+        r
+          .map((cell) => {
+            const s = String(cell ?? "");
+            return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+          })
+          .join(",")
+      )
+      .join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `blunder-recipes-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Recipes exported (CSV)", {
+      description: `${rows.length - 1} rows written.`,
     });
   };
 
@@ -233,7 +316,10 @@ export default function RecipeManual() {
           onSaveClick={handleSave}
           currency={currency}
           onCurrencyChange={setCurrency}
+          rounding={rounding}
+          onRoundingChange={setRounding}
           onExport={handleExport}
+          onExportCSV={handleExportCSV}
           onImport={handleImport}
         />
 
@@ -303,6 +389,7 @@ export default function RecipeManual() {
                 onDelete={handleDeleteItem}
                 onPrint={handlePrint}
                 currency={currency}
+                rounding={rounding}
               />
             ))}
             {editMode && <AddItemCard onAdd={handleAddItem} />}
@@ -349,6 +436,7 @@ export default function RecipeManual() {
             item={printJob.item}
             size={printJob.size}
             currency={currency}
+            rounding={rounding}
           />
         </div>
       )}
