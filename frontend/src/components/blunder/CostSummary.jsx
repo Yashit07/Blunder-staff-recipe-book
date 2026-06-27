@@ -125,8 +125,8 @@ export const CostSummary = ({
                   step="0.01"
                   min="0"
                   value={
-                    sp && typeof sp === "object"
-                      ? sp[size] ?? ""
+                    item.salePrice && typeof item.salePrice === "object"
+                      ? item.salePrice[size] ?? ""
                       : item.salePrice ?? ""
                   }
                   placeholder="0.00"

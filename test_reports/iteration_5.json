@@ -1,0 +1,31 @@
+{
+  "summary": "Verified the original 'Can't find variable: sp' bug is FIXED — edit mode unlocks via password 0007 with no ReferenceError and all 91 cards render cleanly. However, a sibling bug surfaced in the same CostSummary.jsx component: typing in the sale-price input throws 'ReferenceError: setSalePriceForSize is not defined' (the onChange handler still references an undefined local function). This breaks the editability requirement and the size-toggle independence test could not be evaluated.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "App loads at REACT_APP_BACKEND_URL",
+    "Edit Mode button (data-testid=edit-mode-btn) is clickable",
+    "Password 0007 + Unlock unlocks edit mode successfully (toast 'Edit mode unlocked' shown)",
+    "Cards render in edit mode without crashing — 91 cost-summary sections and 91 sale-price-input-* fields present",
+    "No ReferenceError/'sp'/'Can't find variable: sp' in console — original bug fix CONFIRMED"
+  ],
+  "failed": [
+    {
+      "area": "CostSummary.jsx sale-price input onChange",
+      "issue": "Uncaught runtime error: 'ReferenceError: setSalePriceForSize is not defined' fires when user types in any sale-price input. Triggered at onChange (bundle.js:874:28). The fix removed the bad `sp` value reference but the onChange still calls `setSalePriceForSize(e.target.value)` — that function is not declared anywhere in CostSummary.jsx and the `onChange` prop passed from parent is not invoked.",
+      "evidence": "Filled '12.50' into sale-price-input-itm-1782554561923 → red overlay 'Uncaught runtime errors: setSalePriceForSize is not defined'. Input value remains '' (state never updates).",
+      "priority": "HIGH"
+    },
+    {
+      "area": "Size-toggle test (per request)",
+      "issue": "Could not validate sale-price-per-size independence because the input cannot accept any value (blocked by above bug). Note: size toggle testid is 'size-toggle-{itemId}-large' (not 'size-large-{itemId}').",
+      "evidence": "fill() returns input_value '' and triggers the setSalePriceForSize error overlay before size toggle can be exercised.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "In /app/frontend/src/components/blunder/CostSummary.jsx line ~133, replace `onChange={(e) => setSalePriceForSize(e.target.value)}` with a handler that uses the `onChange` prop already received by the component — e.g., build the per-size object ({ ...(typeof item.salePrice === 'object' ? item.salePrice : {}), [size]: e.target.value }) and call onChange({ ...item, salePrice: <updated> }). Then re-test typing + Regular/Large independence."
+  ],
+  "success_rate": {"backend": "n/a", "frontend": "60%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}
