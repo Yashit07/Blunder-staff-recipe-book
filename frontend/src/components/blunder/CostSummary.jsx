@@ -130,7 +130,14 @@ export const CostSummary = ({
                       : item.salePrice ?? ""
                   }
                   placeholder="0.00"
-                  onChange={(e) => setSalePriceForSize(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const prev = item.salePrice && typeof item.salePrice === "object" ? item.salePrice : {};
+                    onChange && onChange({
+                      ...item,
+                      salePrice: { ...prev, [size]: v === "" ? undefined : parseFloat(v) || 0 },
+                    });
+                  }}
                   data-testid={`sale-price-input-${item.id}`}
                 />
               </div>

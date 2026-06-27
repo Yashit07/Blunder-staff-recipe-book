@@ -1,0 +1,19 @@
+{
+  "summary": "CostSummary onChange fix CONFIRMED. The inlined onChange handler in /app/frontend/src/components/blunder/CostSummary.jsx now correctly builds the per-size salePrice object and invokes the parent onChange prop. No setSalePriceForSize ReferenceError, no `sp` ReferenceError, and per-size independence works as expected.",
+  "tested_scope": ["frontend"],
+  "passed": [
+    "App loads at REACT_APP_BACKEND_URL",
+    "Edit Mode unlocks via password 0007 + JT initials (dialog auto-accepted)",
+    "91 sale-price inputs render in edit mode without errors",
+    "Typing '12.50' into sale-price-input-itm-1782554561923 is accepted (input value = '12.50'), NO red runtime-error overlay",
+    "No 'setSalePriceForSize is not defined' or 'sp is not defined' errors in console/pageerror",
+    "Size toggle Regular -> Large: input value resets to '' (independent per size)",
+    "Typing '19.99' on Large size accepted",
+    "Toggle back to Regular preserves the previously entered value (12.5) — per-size persistence confirmed"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
