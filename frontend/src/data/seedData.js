@@ -4,8 +4,7 @@
 // These can be overridden per-item in the future.
 
 export const SIZE_RATIOS = {
-  Small: 0.66,
-  Medium: 1,
+  Regular: 1,
   Large: 1.5,
 };
 

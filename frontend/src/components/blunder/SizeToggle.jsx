@@ -1,6 +1,6 @@
 import React from "react";
 
-const SIZES = ["Small", "Medium", "Large"];
+const SIZES = ["Regular", "Large"];
 
 export const SizeToggle = ({ value, onChange, itemId }) => {
   return (

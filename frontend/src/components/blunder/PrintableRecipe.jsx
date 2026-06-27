@@ -4,7 +4,7 @@ import { formatQty, formatMoney, formatDate } from "../../utils/format";
 
 // Renders a clean printable version of a single recipe at a given size.
 // Visible only via @media print (controlled by parent via .print-target wrapper).
-export const PrintableRecipe = ({ item, size = "Medium", currency = "₹", rounding = "none" }) => {
+export const PrintableRecipe = ({ item, size = "Regular", currency = "₹", rounding = "none" }) => {
   if (!item) return null;
   const ratio = SIZE_RATIOS[size] ?? 1;
   const scaled = item.ingredients.map((i) => ({

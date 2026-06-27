@@ -43,6 +43,14 @@ export default function RecipeManual() {
   const [rounding, setRounding] = useState(
     () => localStorage.getItem(ROUNDING_KEY) || "none"
   );
+  const [brandName, setBrandName] = useState(
+    () => localStorage.getItem("blunder.brandName") || "blunder"
+  );
+  const [brandLogo, setBrandLogo] = useState(
+    () => localStorage.getItem("blunder.brandLogo") || ""
+  );
+  useEffect(() => { localStorage.setItem("blunder.brandName", brandName || ""); }, [brandName]);
+  useEffect(() => { localStorage.setItem("blunder.brandLogo", brandLogo || ""); }, [brandLogo]);
   const [userCategories, setUserCategories] = useState(() => {
     try {
       const raw = localStorage.getItem(USER_CATS_KEY);
@@ -73,8 +81,8 @@ export default function RecipeManual() {
           if (res.state.rounding) setRounding(res.state.rounding);
           if (Array.isArray(res.state.userCategories))
             setUserCategories(res.state.userCategories);
-          setSyncStatus("synced");
-          toast.success("Loaded shared recipes from cloud");
+          if (typeof res.state.brandName === "string") setBrandName(res.state.brandName);
+          if (typeof res.state.brandLogo === "string") setBrandLogo(res.state.brandLogo);
         } else {
           // Remote empty — push current local state up so this device seeds the cloud
           await saveSharedState({
@@ -233,6 +241,8 @@ export default function RecipeManual() {
           currency,
           rounding,
           userCategories,
+          brandName,
+          brandLogo,
         });
         setSyncStatus("synced");
         toast.success("Changes saved & synced to cloud", {
@@ -450,6 +460,10 @@ export default function RecipeManual() {
           onExport={handleExport}
           onExportCSV={handleExportCSV}
           onImport={handleImport}
+          brandName={brandName}
+          brandLogo={brandLogo}
+          onBrandNameChange={setBrandName}
+          onBrandLogoChange={setBrandLogo}
         />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">

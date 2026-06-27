@@ -112,7 +112,7 @@ export const CostSummary = ({
               style={{ color: "#5A6E55", fontFamily: "Manrope" }}
             >
               <TrendingUp size={11} strokeWidth={2.5} />
-              Sale Price
+              Sale Price · {size}
             </span>
             {editMode ? (
               <div className="flex items-center gap-1">
@@ -124,16 +124,13 @@ export const CostSummary = ({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={item.salePrice ?? ""}
-                  placeholder="0.00"
-                  onChange={(e) =>
-                    onChange &&
-                    onChange({
-                      ...item,
-                      salePrice:
-                        e.target.value === "" ? undefined : parseFloat(e.target.value) || 0,
-                    })
+                  value={
+                    sp && typeof sp === "object"
+                      ? sp[size] ?? ""
+                      : item.salePrice ?? ""
                   }
+                  placeholder="0.00"
+                  onChange={(e) => setSalePriceForSize(e.target.value)}
                   data-testid={`sale-price-input-${item.id}`}
                 />
               </div>

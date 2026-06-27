@@ -39,7 +39,7 @@ export const MenuCard = ({
   currency = "₹",
   rounding = "none",
 }) => {
-  const [size, setSize] = useState("Medium");
+  const [size, setSize] = useState("Regular");
   const ratio = SIZE_RATIOS[size];
 
   const scaledIngredients = useMemo(
@@ -65,7 +65,7 @@ export const MenuCard = ({
     update({
       ingredients: [
         ...item.ingredients,
-        { id: `i-${Date.now()}`, name: "New ingredient", amount: 10, unit: "g" },
+        { id: `i-${Date.now()}`, name: "", amount: 0, unit: "", costPerUnit: 0 },
       ],
     });
   };
@@ -81,7 +81,7 @@ export const MenuCard = ({
     update({ steps: next });
   };
 
-  const addStep = () => update({ steps: [...item.steps, "New step"] });
+  const addStep = () => update({ steps: [...item.steps, ""] });
   const removeStep = (idx) =>
     update({ steps: item.steps.filter((_, i) => i !== idx) });
 

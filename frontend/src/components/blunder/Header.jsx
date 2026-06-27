@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Lock, Save, Download, Upload } from "lucide-react";
+import { Lock, Save, Download, Upload, ImagePlus } from "lucide-react";
 
 export const Header = ({
   editMode,
@@ -12,6 +12,10 @@ export const Header = ({
   onExport,
   onExportCSV,
   onImport,
+  brandName,
+  brandLogo,
+  onBrandNameChange,
+  onBrandLogoChange,
 }) => {
   const fileRef = useRef(null);
   const handleImportClick = () => fileRef.current?.click();
@@ -28,31 +32,48 @@ export const Header = ({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div
-            className="h-10 w-10 rounded-2xl neuro-card flex items-center justify-center"
-            style={{ boxShadow: "4px 4px 10px #e5e4e0, -4px -4px 10px #ffffff" }}
+          <label
+            className="h-10 w-10 rounded-2xl neuro-card flex items-center justify-center overflow-hidden relative"
+            style={{ boxShadow: "4px 4px 10px #e5e4e0, -4px -4px 10px #ffffff", cursor: editMode ? "pointer" : "default" }}
+            title={editMode ? "Upload logo" : ""}
           >
-            <span
-              className="font-black text-xl"
-              style={{ fontFamily: "Manrope", color: "#2C2C2A" }}
-            >
-              b.
-            </span>
-          </div>
+            {brandLogo ? (
+              <img src={brandLogo} alt="logo" className="h-full w-full object-cover" />
+            ) : (
+              <span className="font-black text-xl" style={{ fontFamily: "Manrope", color: "#2C2C2A" }}>b.</span>
+            )}
+            {editMode && (
+              <>
+                <span className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)", opacity: 0, transition: "opacity .2s" }} onMouseEnter={e=>e.currentTarget.style.opacity="1"} onMouseLeave={e=>e.currentTarget.style.opacity="0"}>
+                  <ImagePlus size={14} color="#fff" />
+                </span>
+                <input
+                  type="file" accept="image/*" className="hidden"
+                  data-testid="brand-logo-input"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]; if (!f || !onBrandLogoChange) return;
+                    const r = new FileReader();
+                    r.onload = () => onBrandLogoChange(r.result);
+                    r.readAsDataURL(f);
+                    e.target.value = "";
+                  }}
+                />
+              </>
+            )}
+          </label>
           <div className="leading-tight">
-            <h1
-              className="font-black text-2xl sm:text-3xl tracking-tighter lowercase"
-              style={{ fontFamily: "Manrope", color: "#2C2C2A" }}
-              data-testid="brand-wordmark"
-            >
-              blunder
-            </h1>
-            <p
-              className="text-[0.65rem] uppercase tracking-[0.25em] font-bold"
-              style={{ color: "#7A7A75" }}
-            >
-              Staff Recipe Manual
-            </p>
+            {editMode ? (
+              <input
+                value={brandName || ""}
+                onChange={(e) => onBrandNameChange && onBrandNameChange(e.target.value)}
+                className="edit-field font-black text-2xl sm:text-3xl tracking-tighter lowercase"
+                style={{ fontFamily: "Manrope", color: "#2C2C2A", width: "auto", minWidth: "8rem" }}
+                data-testid="brand-wordmark-input"
+              />
+            ) : (
+              <h1 className="font-black text-2xl sm:text-3xl tracking-tighter lowercase" style={{ fontFamily: "Manrope", color: "#2C2C2A" }} data-testid="brand-wordmark">{brandName || "blunder"}</h1>
+            )}
+            <p className="text-[0.65rem] uppercase tracking-[0.25em] font-bold" style={{ color: "#7A7A75" }}>Staff Recipe Manual</p>
           </div>
         </div>
 
